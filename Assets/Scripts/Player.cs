@@ -2,7 +2,9 @@ using Assets.Scripts;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Sockets;
+using Unity.VisualScripting;
 using UnityEditor.Rendering;
 using UnityEngine;
 
@@ -19,7 +21,7 @@ public class Player : MonoBehaviour
 
     private void Awake()
     {
-        input.OnInteraction += Input_OnInteraction;
+        if (input != null) input.OnInteraction += Input_OnInteraction;
     }
 
     private void Input_OnInteraction(object sender, EventArgs e)
@@ -31,30 +33,34 @@ public class Player : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        var direction = input.GetDirection();
-        HandleMovement(direction);
-        HandleInteraction(direction);
+        var direction = input?.GetDirection() ?? Vector3.zero;
+        var raycastHit = HandleMovement(direction);
+        HandleInteraction(raycastHit);
     }
 
-    private void HandleInteraction(Vector3 direction)
+    private void HandleInteraction(RaycastHit? raycastHit)
     {
-        if (!direction.Equals(Vector3.zero))
+        if (IsWalking)
         {
-            var coliider = GetComponent<BoxCollider>();
-            if (Physics.Raycast(transform.position, direction, out var hitInfo, maxDistance: coliider.size.x))
-            {
-                LastInteracPlayer = hitInfo.transform.GetComponent<IInteracPlayer>();
-            }
-            else
+            if (raycastHit == null)
             {
                 LastInteracPlayer?.Interaction(null);
                 LastInteracPlayer = null;
+                return;
             }
+
+            var interacPlayers = raycastHit?.transform.GetComponents<IInteracPlayer>();
+            Debug.Assert(interacPlayers?.Length > 1 == false);
+
+            var interacPlayer = raycastHit?.transform.GetComponent<IInteracPlayer>();
+            if (interacPlayer != LastInteracPlayer) LastInteracPlayer?.Interaction(null);
+            LastInteracPlayer = interacPlayer;
+            LastInteracPlayer?.Interaction(this);
+            Debug.Log(LastInteracPlayer);
         }
-        LastInteracPlayer?.Interaction(this);
     }
 
-    private void HandleMovement(Vector3 direction)
+    private RaycastHit? HandleMovement(Vector3 direction)
     {
         var coliider = GetComponent<BoxCollider>();
 
@@ -65,19 +71,25 @@ public class Player : MonoBehaviour
         //move
         var playerRadius = coliider.size.x / 2;
         var playerHeight = transform.position + Vector3.up * coliider.size.x;
-        var directions = new[] {
+        var directions = new List<Vector3>  {
             direction,
             new Vector3(direction.x, 0, 0).normalized,
             new Vector3(0, 0, direction.z).normalized,
         };
+        directions = directions.Where(q => q != Vector3.zero).ToList();
+
+        if (!IsWalking) return null;
+
+        RaycastHit raycastHit = default;
         foreach (var item in directions)
         {
-            if (IsWalking && !Physics.CapsuleCast(transform.position, playerHeight, playerRadius, item, moveDistance))
+            if (!Physics.CapsuleCast(transform.position, playerHeight, playerRadius, item, out raycastHit, moveDistance))
             {
                 transform.position += item * moveDistance;
-                break;
+                return null;
             }
         }
+        return raycastHit;
     }
 
 }

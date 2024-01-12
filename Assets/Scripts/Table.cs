@@ -1,4 +1,5 @@
 using Assets.Scripts;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
@@ -11,7 +12,14 @@ public class Table : MonoBehaviour, IInteracPlayer
     public void Interaction(Player player)
     {
         var isInterecEnter = player != null;
-        if (isInterecEnter && !activeWhenInteraction.IsUnityNull()) activeWhenInteraction.gameObject.SetActive(true);
-        if (!isInterecEnter && activeWhenInteraction.IsUnityNull()) this.gameObject.SetActive(false);
+        if (activeWhenInteraction.IsUnityNull())
+        {
+            this.gameObject.SetActive(!isInterecEnter);
+        }
+        else
+        {
+            //table parent
+            activeWhenInteraction.gameObject.SetActive(isInterecEnter);
+        }
     }
 }
