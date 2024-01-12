@@ -40,6 +40,7 @@ public class Player : MonoBehaviour
 
     private void HandleInteraction(RaycastHit? raycastHit)
     {
+        Debug.Log(raycastHit);
         if (IsWalking)
         {
             if (raycastHit == null)
@@ -49,14 +50,15 @@ public class Player : MonoBehaviour
                 return;
             }
 
-            var interacPlayers = raycastHit?.transform.GetComponents<IInteracPlayer>();
-            Debug.Assert(interacPlayers?.Length > 1 == false);
-
             var interacPlayer = raycastHit?.transform.GetComponent<IInteracPlayer>();
-            if (interacPlayer != LastInteracPlayer) LastInteracPlayer?.Interaction(null);
-            LastInteracPlayer = interacPlayer;
-            LastInteracPlayer?.Interaction(this);
-            Debug.Log(LastInteracPlayer);
+            if (interacPlayer?.Interaction(this) ?? false)
+            {
+                if (interacPlayer != LastInteracPlayer)
+                {
+                    LastInteracPlayer?.Interaction(null);
+                    LastInteracPlayer = interacPlayer;
+                }
+            }
         }
     }
 

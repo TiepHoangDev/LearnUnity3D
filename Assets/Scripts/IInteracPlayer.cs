@@ -8,6 +8,6 @@ namespace Assets.Scripts
 {
     public interface IInteracPlayer
     {
-        void Interaction(Player player);
+        bool Interaction(Player player);
     }
 }

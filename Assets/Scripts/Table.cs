@@ -9,17 +9,11 @@ public class Table : MonoBehaviour, IInteracPlayer
 {
     [SerializeField] GameObject activeWhenInteraction = null;
 
-    public void Interaction(Player player)
+    public bool Interaction(Player player)
     {
         var isInterecEnter = player != null;
-        if (activeWhenInteraction.IsUnityNull())
-        {
-            this.gameObject.SetActive(!isInterecEnter);
-        }
-        else
-        {
-            //table parent
-            activeWhenInteraction.gameObject.SetActive(isInterecEnter);
-        }
+        if (activeWhenInteraction.IsUnityNull()) return false;
+        activeWhenInteraction.gameObject.SetActive(isInterecEnter);
+        return true;
     }
 }
