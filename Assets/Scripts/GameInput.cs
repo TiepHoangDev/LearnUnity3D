@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
@@ -7,10 +8,18 @@ public class GameInput : MonoBehaviour
 {
     PlayerInputActions inputActions;
 
+    public event EventHandler OnInteraction;
+
     private void Awake()
     {
         inputActions = new PlayerInputActions();
         inputActions.Player.Enable();
+        inputActions.Player.Interacs.performed += Interacs_performed;
+    }
+
+    private void Interacs_performed(UnityEngine.InputSystem.InputAction.CallbackContext obj)
+    {
+        OnInteraction?.Invoke(this, EventArgs.Empty);
     }
 
     public Vector3 GetDirection()
