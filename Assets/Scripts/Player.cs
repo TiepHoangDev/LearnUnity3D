@@ -16,7 +16,7 @@ public class Player : MonoBehaviour
 
     float moveDistance => moveSpeed * Time.deltaTime;
 
-    public IInteracPlayer LastInteracPlayer = null;
+    public IPlayerSelected LastInteracPlayer = null;
     public bool IsWalking = false;
 
     private void Awake()
@@ -26,7 +26,7 @@ public class Player : MonoBehaviour
 
     private void Input_OnInteraction(object sender, EventArgs e)
     {
-
+        LastInteracPlayer?.Interaction(this);
     }
 
 
@@ -40,22 +40,21 @@ public class Player : MonoBehaviour
 
     private void HandleInteraction(RaycastHit? raycastHit)
     {
-        Debug.Log(raycastHit);
         if (IsWalking)
         {
             if (raycastHit == null)
             {
-                LastInteracPlayer?.Interaction(null);
+                LastInteracPlayer?.Selected(null);
                 LastInteracPlayer = null;
                 return;
             }
 
-            var interacPlayer = raycastHit?.transform.GetComponent<IInteracPlayer>();
-            if (interacPlayer?.Interaction(this) ?? false)
+            var interacPlayer = raycastHit?.transform.GetComponent<IPlayerSelected>();
+            if (interacPlayer?.Selected(this) ?? false)
             {
                 if (interacPlayer != LastInteracPlayer)
                 {
-                    LastInteracPlayer?.Interaction(null);
+                    LastInteracPlayer?.Selected(null);
                     LastInteracPlayer = interacPlayer;
                 }
             }
